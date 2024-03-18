@@ -14,7 +14,7 @@ async def get_channel_id(client, channel_name):
         if dialog.name == channel_name:
             return dialog.id
 
-async def get_messages_today(client, channel_id):
+async def get_today_messages(client, channel_id):
     israel_timezone = pytz.timezone('Israel')
     today_israel = datetime.now(israel_timezone).date()
 
@@ -61,7 +61,7 @@ async def main():
     destination_channel_id = DST_CHANNEL_ID
 
     # Get all messages sent today from the source channel
-    messages = await get_messages_today(client, source_channel_id)
+    messages = await get_today_messages(client, source_channel_id)
 
     # Summarize the messages
     summarized_message = await summarize(messages)
