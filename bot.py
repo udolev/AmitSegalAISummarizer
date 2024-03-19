@@ -170,11 +170,6 @@ async def summarize(messages):
     print(prompt_text)
 
     response = model.generate_content(prompt_text)
-
-    """# Implement your logic for summarizing the messages
-    summarized_message = "Today's summary:\n"
-    for message in messages[::-1]:
-        summarized_message += message.text + '\n' + 13*'🇮🇱' + '\n'"""
     
     return response.text + 2*'\n' + summary_end
 
