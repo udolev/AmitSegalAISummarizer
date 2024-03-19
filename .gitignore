@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 mysession.session
+calling_gemini_example.py
