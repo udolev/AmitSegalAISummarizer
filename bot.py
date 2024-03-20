@@ -38,7 +38,7 @@ async def get_todays_messages(client, channel_id):
         else:
             break
     
-    logger.info(f"Collected {len(messages)} messages for today.")
+    logger.info(f"{len(messages)} messages sent today.")
     return messages
 
 async def summarize(messages):
