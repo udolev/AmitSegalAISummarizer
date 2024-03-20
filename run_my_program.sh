@@ -1,3 +1,2 @@
 cd ~/dev/AmitSegalAISummarizer/
-poetry run python bot.py
-
+/Users/uriel/.local/bin/poetry run python bot.py
