@@ -1,9 +1,5 @@
 import os
-import logging
 import asyncio
-from datetime import datetime
-import pytz
-
 from dotenv import load_dotenv
 from telethon import TelegramClient
 import google.generativeai as genai
@@ -11,79 +7,78 @@ from util import *
 
 load_dotenv()
 
-# Set up logging
-logger = logging.getLogger('bot')
-logger.setLevel(logging.INFO)
-
-file_handler = logging.FileHandler('bot_logs.log')
-file_handler.setLevel(logging.INFO)
-
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(funcName)s - %(message)s')
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-
-# Calculate the current date in Israel
-israel_timezone = pytz.timezone('Israel')
-today_israel = datetime.now(israel_timezone).date()
 
 async def get_channel_id(client, channel_name):
     async for dialog in client.iter_dialogs():
         if dialog.name == channel_name:
             return dialog.id
 
+
 async def retrieve_todays_messages(client, channel_id):
     messages = []
     async for message in client.iter_messages(channel_id):
-        message_date_israel = message.date.astimezone(israel_timezone).date()   
+        message_date_israel = message.date.astimezone(israel_timezone).date()
         if message_date_israel == today_israel:
             messages.append(message)
         else:
             break
-    
+
     logger.info(f"{len(messages)} messages sent today.")
     return messages
+
 
 async def summarize(messages):
     google_api_key = os.environ.get('GOOGLE_API_KEY')
 
     if google_api_key is None:
         logger.error("Google API Key not found.")
-        raise ValueError("Google API Key not found in .env file. Please set the 'GOOGLE_API_KEY' environment variable.")
-    
+        raise ValueError(
+            "Google API Key not found in .env file. Please set the 'GOOGLE_API_KEY' environment variable."
+        )
+
     logger.debug("Google API Key found.")
 
     genai.configure(api_key=google_api_key)
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
+    model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
+                                  system_instruction=get_system_prompt())
 
-    prompt_text = get_base_prompt(today_israel)
+    summary_prompt = f"הנה ההודעות שנשלחו בערוץ הטלגרם של עמית סגל ב-{today_israel}:\n\n" + '-' * 20 + '\n'
 
     for message in messages[::-1]:
-        prompt_text += message.text + '\n' + '###' + '\n'
-    
-    logger.debug(f"Completed prompt defenition. Prompt: {prompt_text}")
+        summary_prompt += message.text + '\n' + '-' * 20 + '\n'
+
+    summary_prompt += "\nאנא צור סיכום תמציתי ומעניין של ההודעות הללו, בהתאם להנחיות שקיבלת."
+    logger.debug(f"Summary prompt: {summary_prompt}")
 
     logger.info("Generating summary using Google Generative AI model.")
-    response = model.generate_content(prompt_text)
-    summary_end = '''**⚠️ הסיכום נכתב על ידי בינה מלאכותית ויכול להיות לא מדויק ואף שגוי לפעמים. להודעות המקוריות מוזמנים להיכנס לערוץ של עמית סגל @amitsegal. עם ישראל חי! לילה טוב 😴**'''
-
     try:
-        summary = response.text + 2*'\n' + summary_end
+        response = model.generate_content(summary_prompt)
+        summary = response.text
         logger.info("Summary generated successfully.")
         logger.debug(f"Summary result: {summary}")
     except Exception as e:
-        logger.error(f"Summary generation failed: {e}\nResponse feedback: {response.prompt_feedback}")
-        raise RuntimeError("Summary generation failed. Check the logs for more details.") from e
+        logger.error(f"Summary generation failed: {e}")
+        raise RuntimeError(
+            "Summary generation failed. Check the logs for more details."
+        ) from e
 
-    return summary
+    summary_header = f"**עמית סגל - סיכום יומי | {today_israel}**\n\n"
+    summary_footer = """\n\n**⚠️ שימו לב: הסיכום נערך על ידי AI ועשוי לכלול אי-דיוקים.
+להודעות המקוריות, מוזמנים להיכנס לערוץ של עמית סגל: @amitsegal.
+עם ישראל חי! לילה טוב 🇮🇱😴**"""
+
+    return summary_header + summary + summary_footer
+
 
 async def send_summary(client, destination_channel_id, summarized_message):
     # Send the summarized message to the destination channel
     await client.send_message(destination_channel_id, summarized_message)
     logger.info("Summarized message sent to destination channel.")
 
+
 async def main():
     # Log program initiation
-    logger.info("Program initiated.")
+    logger.info("Bot initiated.")
 
     # Initiate relevant consts with appropriate values
     api_id = os.environ.get('TELEGRAM_API_ID')
@@ -110,6 +105,7 @@ async def main():
     # Remember to stop the client
     await client.disconnect()
     logger.info("Telegram client disconnected.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
