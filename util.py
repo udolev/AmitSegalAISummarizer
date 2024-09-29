@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 import pytz
 
 # Set up logging
@@ -16,7 +16,7 @@ logger.addHandler(file_handler)
 
 # Calculate the current date in Israel
 israel_timezone = pytz.timezone('Israel')
-today_israel = datetime.now(israel_timezone).date() - timedelta(days=1)
+today_israel = datetime.now(israel_timezone).date()
 
 SRC_CHANNEL_ID = -1001158360927
 DST_CHANNEL_ID = -1002042219329
