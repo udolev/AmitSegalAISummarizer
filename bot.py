@@ -56,7 +56,8 @@ async def summarize(messages):
     israel_timezone = pytz.timezone('Israel')
     today_israel = datetime.now(israel_timezone).date()
     prompt_text = get_base_prompt(today_israel)
-
+    print(prompt_text)
+    
     for message in messages[::-1]:
         prompt_text += message.text + '\n' + '###' + '\n'
     
