@@ -1,5 +1,6 @@
 import os
 import logging
+import asyncio
 from datetime import datetime
 import pytz
 
@@ -21,15 +22,16 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(funcName)s - %(me
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
+# Calculate the current date in Israel
+israel_timezone = pytz.timezone('Israel')
+today_israel = datetime.now(israel_timezone).date()
+
 async def get_channel_id(client, channel_name):
     async for dialog in client.iter_dialogs():
         if dialog.name == channel_name:
             return dialog.id
 
-async def get_todays_messages(client, channel_id):
-    israel_timezone = pytz.timezone('Israel')
-    today_israel = datetime.now(israel_timezone).date()
-
+async def retrieve_todays_messages(client, channel_id):
     messages = []
     async for message in client.iter_messages(channel_id):
         message_date_israel = message.date.astimezone(israel_timezone).date()   
@@ -51,13 +53,10 @@ async def summarize(messages):
     logger.debug("Google API Key found.")
 
     genai.configure(api_key=google_api_key)
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-1.5-pro-latest')
 
-    israel_timezone = pytz.timezone('Israel')
-    today_israel = datetime.now(israel_timezone).date()
     prompt_text = get_base_prompt(today_israel)
-    print(prompt_text)
-    
+
     for message in messages[::-1]:
         prompt_text += message.text + '\n' + '###' + '\n'
     
@@ -95,19 +94,12 @@ async def main():
     await client.start(os.environ.get('PHONE_NUMBER'))
     logger.info("Telegram client started successfully.")
 
-    '''
-    # To find the chatID for the first time, replace 'your_channel_name' with the name of the source channel and run this lines:
-    source_channel_name = "🇮🇱 עמית סגל - סיכום יומי 🇮🇱"
-    source_channel_id = await get_channel_id(client, source_channel_name)
-    print("Source Channel ID:", source_channel_id)
-    '''
-
     # Define source and destination's channel id's
     source_channel_id = SRC_CHANNEL_ID
     destination_channel_id = DST_CHANNEL_ID
 
     # Get all messages sent today from the source channel
-    messages = await get_todays_messages(client, source_channel_id)
+    messages = await retrieve_todays_messages(client, source_channel_id)
 
     # Summarize the messages
     summarized_message = await summarize(messages)
@@ -120,5 +112,4 @@ async def main():
     logger.info("Telegram client disconnected.")
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
