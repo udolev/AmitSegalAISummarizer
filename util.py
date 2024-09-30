@@ -2,26 +2,34 @@ import logging
 from datetime import datetime
 import pytz
 
-# Set up logging
+# ============================
+# Logging Configuration
+# ============================
 logger = logging.getLogger('bot')
 logger.setLevel(logging.INFO)
 
 file_handler = logging.FileHandler('bot_logs.log')
 file_handler.setLevel(logging.INFO)
 
-formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(funcName)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(funcName)s - %(message)s')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-# Calculate the current date in Israel
+# ============================
+# Timezone and Date Configuration
+# ============================
 israel_timezone = pytz.timezone('Israel')
 today_israel = datetime.now(israel_timezone).date()
 
+# ============================
+# Channel Constants
+# ============================
 SRC_CHANNEL_ID = -1001158360927
 DST_CHANNEL_ID = -1002042219329
 
-
+# ============================
+# System Prompt Configuration
+# ============================
 def get_system_prompt():
     return """
     תפקידך: אתה עוזר AI המתמחה בסיכום הודעות טלגרם בעברית. עליך ליצור סיכום יומי תמציתי ומעניין של ההודעות של עמית סגל, בצורת נקודות עיקריות, שיספק ערך מרבי לקוראים דוברי עברית בפלטפורמת טלגרם.
