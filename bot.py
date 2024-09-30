@@ -42,7 +42,7 @@ async def summarize(messages):
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
                                   system_instruction=get_system_prompt())
 
-    summary_prompt = f"הנה ההודעות שנשלחו בערוץ הטלגרם של עמית סגל ב-{today_israel}:\n\n" + '-' * 20 + '\n'
+    summary_prompt = f"להלן ההודעות שנשלחו בערוץ הטלגרם של עמית סגל היום:\n\n" + '-' * 20 + '\n'
 
     for message in messages[::-1]:
         summary_prompt += message.text + '\n' + '-' * 20 + '\n'
