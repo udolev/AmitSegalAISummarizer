@@ -18,12 +18,12 @@ async def retrieve_todays_messages(client, channel_id):
     messages = []
     async for message in client.iter_messages(channel_id):
         message_date_israel = message.date.astimezone(israel_timezone).date()
-        if message_date_israel == today_israel:
+        if message_date_israel == today_israel and message.text != None:
             messages.append(message)
         else:
             break
 
-    logger.info(f"{len(messages)} messages sent today.")
+    logger.info(f"{len(messages)} messages (containing text) sent today.")
     return messages
 
 
@@ -45,7 +45,7 @@ async def summarize(messages):
     summary_prompt = f"להלן ההודעות שנשלחו בערוץ הטלגרם של עמית סגל היום:\n\n" + '-' * 20 + '\n'
 
     for message in messages[::-1]:
-        summary_prompt += message.text + '\n' + '-' * 20 + '\n'
+        summary_prompt += message.text + "\n" + "-" * 20 + "\n"
 
     summary_prompt += "\nאנא צור סיכום תמציתי ומעניין של ההודעות הללו, בהתאם להנחיות שקיבלת."
     logger.debug(f"Summary prompt: {summary_prompt}")
