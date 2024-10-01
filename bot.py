@@ -8,12 +8,6 @@ from util import *
 load_dotenv()
 
 
-async def get_channel_id(client, channel_name):
-    async for dialog in client.iter_dialogs():
-        if dialog.name == channel_name:
-            return dialog.id
-
-
 async def retrieve_todays_messages(client, channel_id):
     messages = []
     async for message in client.iter_messages(channel_id):
