@@ -25,7 +25,7 @@ This bot automatically retrieves messages from Amit Segal's Telegram channel, su
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/AmitSegalAISummarizer.git
+   git clone https://github.com/udolev/AmitSegalAISummarizer.git
    cd AmitSegalAISummarizer
    ```
 
